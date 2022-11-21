@@ -28,7 +28,8 @@ namespace QuotesAPI.HttpHandlers
                 var currQuote = provider.GetQuote(fromCurrencyCode, toCurrencyCode);
                 bestQuote = Quote.Compare(bestQuote, currQuote);
             }
-            bestQuote.Amount = Math.Round(amount * bestQuote.ExchangeRate);
+            if (bestQuote != null)
+                bestQuote.Amount = Math.Round(amount * bestQuote.ExchangeRate);
             return bestQuote;
         }
     }

@@ -9,7 +9,9 @@ namespace QuotesAPI.Controllers
         public string Get(string from_currency_code, decimal amount, string to_currency_code)
         {
             var res = QuoteHttpHandler.GetQuote(from_currency_code, to_currency_code, amount);
-            return JsonConvert.SerializeObject(res);
+            return res != null ? 
+                   JsonConvert.SerializeObject(res) :
+                   $"Failed to retrieve quote for {from_currency_code} => {to_currency_code}";
         }        
     }
 }

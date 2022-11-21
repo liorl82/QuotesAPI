@@ -1,4 +1,5 @@
 ﻿using QuotesAPI.Models;
+using System;
 using System.Net.Http;
 
 namespace QuotesAPI.Providers.BaseClasses
@@ -18,29 +19,42 @@ namespace QuotesAPI.Providers.BaseClasses
         /// </summary>
         public Quote GetQuote(string fromCurrencyCode, string toCurrencyCode)
         {
+            Quote quote = null;
             //Get Rate from Server
-            string quotesStr;
+            string quotesStr = string.Empty;
             using (var client = new HttpClient())
             {
+                HttpResponseMessage response = null;
                 var url = string.Concat(_url, fromCurrencyCode);
-                HttpResponseMessage response = client.GetAsync(url).Result;
-                response.EnsureSuccessStatusCode();
-                quotesStr = response.Content.ReadAsStringAsync().Result;
+                try
+                {
+                    response = client.GetAsync(url).Result;
+                }
+                // Hush in case currency doesn't exist in provider
+                catch (Exception) { } 
+
+                if (response != null && response.IsSuccessStatusCode)
+                    quotesStr = response.Content.ReadAsStringAsync().Result;
             }
 
             // Parse requested rate
-            var rateStr = ParseQuote(quotesStr, toCurrencyCode.ToUpper());            
-
-            // Wrap response
-            if (rateStr == null || !decimal.TryParse(rateStr, out var rate))
-                return null;
-            return new Quote()
+            if (!string.IsNullOrEmpty(quotesStr))
             {
-                ExchangeRate = rate,
-                FromCurrencyCode = fromCurrencyCode,
-                ToCurrencyCode = toCurrencyCode,
-                ProviderName = _providerName
-            };
+                var rateStr = ParseQuote(quotesStr, toCurrencyCode.ToUpper());
+                // Wrap response
+                if (rateStr != null && decimal.TryParse(rateStr, out var rate))
+                {
+                    quote = new Quote()
+                    {
+                        ExchangeRate = rate,
+                        FromCurrencyCode = fromCurrencyCode,
+                        ToCurrencyCode = toCurrencyCode,
+                        ProviderName = _providerName
+                    };
+                }                
+            }
+
+            return quote;
         }
     }
 }
