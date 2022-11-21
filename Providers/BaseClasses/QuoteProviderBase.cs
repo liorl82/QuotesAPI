@@ -1,6 +1,7 @@
 ﻿using QuotesAPI.Models;
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace QuotesAPI.Providers.BaseClasses
 {
@@ -17,7 +18,7 @@ namespace QuotesAPI.Providers.BaseClasses
         /// <summary>
         /// Gets a quote for a given pair of currencies
         /// </summary>
-        public Quote GetQuote(string fromCurrencyCode, string toCurrencyCode)
+        public async Task<Quote> GetQuote(string fromCurrencyCode, string toCurrencyCode)
         {
             Quote quote = null;
             //Get Rate from Server
@@ -28,13 +29,13 @@ namespace QuotesAPI.Providers.BaseClasses
                 var url = string.Concat(_url, fromCurrencyCode);
                 try
                 {
-                    response = client.GetAsync(url).Result;
+                    response = await client.GetAsync(url);
                 }
                 // Hush in case currency doesn't exist in provider
                 catch (Exception) { } 
 
                 if (response != null && response.IsSuccessStatusCode)
-                    quotesStr = response.Content.ReadAsStringAsync().Result;
+                    quotesStr = await response.Content.ReadAsStringAsync();
             }
 
             // Parse requested rate

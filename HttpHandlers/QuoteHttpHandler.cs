@@ -4,6 +4,7 @@ using QuotesAPI.Providers.BaseClasses;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace QuotesAPI.HttpHandlers
 {
@@ -20,12 +21,12 @@ namespace QuotesAPI.HttpHandlers
         /// <summary>
         /// Gets a quote for a given pair of currencies
         /// </summary>
-        public static Quote GetQuote(string fromCurrencyCode, string toCurrencyCode, decimal amount)
+        public static async Task<Quote> GetQuote(string fromCurrencyCode, string toCurrencyCode, decimal amount)
         {
             Quote bestQuote = null;
             foreach (var provider in _quoteProviders)
             {
-                var currQuote = provider.GetQuote(fromCurrencyCode, toCurrencyCode);
+                var currQuote = await provider.GetQuote(fromCurrencyCode, toCurrencyCode);
                 bestQuote = Quote.Compare(bestQuote, currQuote);
             }
             if (bestQuote != null)
